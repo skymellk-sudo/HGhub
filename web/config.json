@@ -1,0 +1,17 @@
+{
+  "version": "1.2.1",
+  "base": "https://huangguoai.com",
+  "fixed": [
+    [
+      "�̶���· 1",
+      "https://huangguoai.com"
+    ],
+    [
+      "�̶���· 2",
+      "https://huangguoai.ai"
+    ]
+  ],
+  "publish": "https://huangguoai.pages.dev/",
+  "imageKey": "f5d965df75336270",
+  "imageIv": "97b60394abc2fbe1"
+}

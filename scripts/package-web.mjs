@@ -1,0 +1,10 @@
+import { cp, mkdir, writeFile } from 'node:fs/promises';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const output=resolve(process.argv[2]||resolve(root,'artifacts/HGhub-Web'));
+await mkdir(output,{recursive:true});
+for(const item of ['dist','web','LICENSE'])await cp(resolve(root,item),resolve(output,item),{recursive:true});
+await cp(resolve(root,'web/README.md'),resolve(output,'ʹ��˵��.md'));
+await writeFile(resolve(output,'������ҳ.cmd'),'@echo off\r\ncd /d "%~dp0"\r\nwhere node >nul 2>nul\r\nif errorlevel 1 (\r\n echo Please install Node.js 22 or newer: https://nodejs.org/\r\n pause\r\n exit /b 1\r\n)\r\nstart "" "http://127.0.0.1:8787"\r\nnode web/server.mjs\r\npause\r\n');
+console.log(output);

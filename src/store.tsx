@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { invoke } from "./runtime";
 import { api, platform as envPlatform } from "./api";
 import { isStrictSecurity, setStrictSecurity as setHtmlStrictSecurity } from "./html";
 import type { User } from "./types";
@@ -8,7 +8,7 @@ export type Platform = "android" | "ios" | "windows" | "macos" | "linux";
 export type Theme = "dark" | "light";
 export type Tab = "home" | "search" | "category" | "profile";
 
-/** 播放页上下文：ids 是来源列表，index 是当前条目。 */
+/** ����ҳ�����ģ�ids ����Դ�б���index �ǵ�ǰ��Ŀ�� */
 export type FeedContext = {
   kind: "feed";
   key: string;
@@ -17,7 +17,7 @@ export type FeedContext = {
   title: string;
   source: string;
   feedKind?: "video" | "post";
-  /** 从观看记录续播：起始集数与秒数 */
+  /** �ӹۿ���¼��������ʼ���������� */
   startEp?: number;
   startTime?: number;
 };
@@ -40,7 +40,7 @@ export type PageInput =
 
 export type Toast = { id: number; msg: string; icon?: "ok" | "heart" | "star" | "info" };
 
-/** 观看记录：看到第几集、第几秒（`dur` 用来判断是否已看完） */
+/** �ۿ���¼�������ڼ������ڼ��루`dur` �����ж��Ƿ��ѿ��꣩ */
 export type WatchProgress = { id: number; ep: number; t: number; dur: number; at: number };
 
 type Persist = {
@@ -60,7 +60,7 @@ const DEFAULTS: Persist = {
   muted: true, muteOnStartup: true, volume: 0.7, searchHist: [],
 };
 
-/** 旧版本 history 是 number[]，读出来时升级成带进度的结构 */
+/** �ɰ汾 history �� number[]��������ʱ�����ɴ����ȵĽṹ */
 function normalizeHistory(raw: unknown): WatchProgress[] {
   if (!Array.isArray(raw)) return [];
   const out: WatchProgress[] = [];
@@ -82,7 +82,7 @@ function loadPersist(): Persist {
     const raw = localStorage.getItem(LS);
     if (!raw) return DEFAULTS;
     const p = { ...DEFAULTS, ...(JSON.parse(raw) as Partial<Persist>) };
-    // 只在启动时应用；本次使用中取消静音不会关闭此偏好。
+    // ֻ������ʱӦ�ã�����ʹ����ȡ����������رմ�ƫ�á�
     const muteOnStartup = p.muteOnStartup !== false;
     return { ...p, muteOnStartup, muted: muteOnStartup || p.muted === true, history: normalizeHistory(p.history) };
   } catch {
@@ -115,13 +115,13 @@ type Store = {
   isLiked: (id: number) => boolean; isFav: (id: number) => boolean;
   toggleLikeLocal: (id: number) => boolean;
   toggleFavLocal: (id: number) => boolean;
-  /** 记一条观看记录；`ep/t/dur` 省略时保留原进度，`ep` 变了就把进度归零 */
+  /** ��һ���ۿ���¼��`ep/t/dur` ʡ��ʱ����ԭ���ȣ�`ep` ���˾Ͱѽ��ȹ��� */
   addHistory: (id: number, ep?: number, t?: number, dur?: number) => void;
   clearHistory: () => void;
   toggleFollowLocal: (uid: number) => boolean;
   theater: boolean; setTheater: (v: boolean | ((p: boolean) => boolean)) => void;
   fs: boolean; setFs: (v: boolean | ((p: boolean) => boolean)) => void;
-  /** 清屏模式（单击屏幕消除所有控件，只保留纯视频内容） */
+  /** ����ģʽ��������Ļ�������пؼ���ֻ��������Ƶ���ݣ� */
   clean: boolean; setClean: (v: boolean | ((p: boolean) => boolean)) => void;
   muted: boolean; setMuted: (v: boolean | ((p: boolean) => boolean)) => void;
   muteOnStartup: boolean; setMuteOnStartup: (on: boolean) => void;
@@ -172,11 +172,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
         setCliRelaxed(!!r.cli_relaxed);
       })
-      .catch(() => { /* 离线也能用 */ });
+      .catch(() => { /* ����Ҳ���� */ });
   }, []);
 
   const setStrictSecurity = useCallback(async (on: boolean) => {
-    if (!strictSecurityReady) throw new Error("安全设置尚未读取，请重新启动应用");
+    if (!strictSecurityReady) throw new Error("��ȫ������δ��ȡ������������Ӧ��");
     setSecurityPending(true);
     try {
       const saved = await api.securitySet(on);
@@ -253,7 +253,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     try { await api.logout(); } catch { /* ignore */ }
     setUser(null);
-    toast("已退出登录", "info");
+    toast("���˳���¼", "info");
   }, [toast]);
 
   const setTheater = useCallback((v: boolean | ((prev: boolean) => boolean)) => {

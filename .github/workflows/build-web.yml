@@ -1,0 +1,30 @@
+name: Build Web Bundle
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: node --test web/server.test.mjs
+      - name: Package standalone web service
+        run: node scripts/package-web.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HGhub-Web
+          path: artifacts/HGhub-Web/
+          if-no-files-found: error

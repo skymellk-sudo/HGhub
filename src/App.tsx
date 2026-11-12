@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useStore, type Page, type Tab } from "./store";
 import { isMobile, selfTest } from "./api";
-import { addPluginListener, invoke } from "@tauri-apps/api/core";
+import { addPluginListener, invoke } from "./runtime";
 import { runBack } from "./back";
 import Home from "./pages/Home";
 import Search, { RankPage } from "./pages/Search";
@@ -17,18 +17,18 @@ import ResizeHandles from "./components/ResizeHandles";
 import { tracePlayback } from "./playbackDiagnostics";
 import { IGrid, IGridF, IHome, IHomeF, ISearch, IUser, IUserF, Logo } from "./icons";
 
-/* ============ 底部标签栏（Android）—— 细瘦纯文字、低侵入 ============ */
+/* ============ �ײ���ǩ����Android������ ϸ�ݴ����֡������� ============ */
 function TabBar() {
   const { tab, setTab, theme } = useStore();
   const items: { k: Tab; label: string }[] = [
-    { k: "home", label: "首页" },
-    { k: "search", label: "搜索" },
-    { k: "category", label: "分类" },
-    { k: "profile", label: "我的" },
+    { k: "home", label: "��ҳ" },
+    { k: "search", label: "����" },
+    { k: "category", label: "����" },
+    { k: "profile", label: "�ҵ�" },
   ];
-  /* 细瘦纯文字分栏：只有选中项高亮，没有指示点。
-     首页是沉浸视频 → 底栏压深色；搜索/分类/我的 是浅色内容页 →
-     浅色主题下底栏跟着换成浅色，深色主题保持深色。 */
+  /* ϸ�ݴ����ַ�����ֻ��ѡ���������û��ָʾ�㡣
+     ��ҳ�ǳ�����Ƶ �� ����ѹ��ɫ������/����/�ҵ� ��ǳɫ����ҳ ��
+     ǳɫ�����µ������Ż���ǳɫ����ɫ���Ᵽ����ɫ�� */
   const overVideo = tab === "home";
   const lightBar = !overVideo && theme === "light";
   return (
@@ -61,7 +61,7 @@ function TabBar() {
   );
 }
 
-/* ============ 堆栈页面 ============ */
+/* ============ ��ջҳ�� ============ */
 function StackPage({ page, onBack, wide, top, bottomInset }: {
   page: Page; onBack: () => void; wide: boolean; top: boolean; bottomInset: number;
 }) {
@@ -80,7 +80,7 @@ function StackPage({ page, onBack, wide, top, bottomInset }: {
   return null;
 }
 
-/* ============ 应用主体 ============ */
+/* ============ Ӧ������ ============ */
 function AppBody() {
   const { platform, tab, setTab, stack, pop, loginOpen, setLoginOpen, fs, clean } = useStore();
   const isMobile = platform === "android" || platform === "ios";
@@ -97,7 +97,7 @@ function AppBody() {
     return () => ro.disconnect();
   }, []);
 
-  /* 全局键盘 */
+  /* ȫ�ּ��� */
   useEffect(() => {
     const fn = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
@@ -119,9 +119,9 @@ function AppBody() {
   const vis = (k: Tab) => (tab === k ? "absolute inset-0" : "absolute inset-0 invisible pointer-events-none");
   const pageActive = stack.length === 0 && !loginOpen;
   const bottomInset = isMobile ? (fs || clean ? 0 : 40) : 14;
-  /* 栈页（从搜索/分类/我的进入的播放页、图文页）没有底栏，
-     底部只让出安全区。之前多留了 20px，视频底边会露出一条
-     「底栏」似的窄缝（底部的压暗渐变到不了屏幕最底）。 */
+  /* ջҳ��������/����/�ҵĽ���Ĳ���ҳ��ͼ��ҳ��û�е�����
+     �ײ�ֻ�ó���ȫ����֮ǰ������ 20px����Ƶ�ױ߻�¶��һ��
+     ���������Ƶ�խ�죨�ײ���ѹ�����䵽������Ļ��ף��� */
   const stackInset = isMobile ? 0 : 14;
 
   return (
@@ -145,7 +145,7 @@ function AppBody() {
   );
 }
 
-/* ============ 桌面窗口壳（Windows / macOS）============ */
+/* ============ ���洰�ڿǣ�Windows / macOS��============ */
 function DesktopShell() {
   const [collapsed, setCollapsed] = useState(false);
   const { theater, platform } = useStore();
@@ -155,7 +155,7 @@ function DesktopShell() {
       <div className="relative flex-1 min-h-0">
         <ShellInner collapsed={collapsed || theater} theater={theater} />
       </div>
-      {/* 边缘缩放热区只对无边框窗口（Windows）有效，macOS 走原生窗口边框 */}
+      {/* ��Ե��������ֻ���ޱ߿򴰿ڣ�Windows����Ч��macOS ��ԭ�����ڱ߿� */}
       {platform === "windows" && <ResizeHandles />}
     </div>
   );
@@ -214,7 +214,7 @@ function ShellInner({ collapsed, theater }: { collapsed: boolean; theater: boole
   );
 }
 
-/* ============ 移动端（无壳） ============ */
+/* ============ �ƶ��ˣ��޿ǣ� ============ */
 function MobileShell() {
   const { platform } = useStore();
   return (
@@ -227,21 +227,21 @@ function MobileShell() {
   );
 }
 
-/* ============ 入口 ============ */
+/* ============ ��� ============ */
 export default function App() {
   const { platform, loginOpen, setLoginOpen, tab, setTab, stack, pop, fs, setFs } = useStore();
   useEffect(() => {
     tracePlayback("navigation.change", { tab, stack: stack.map(p => ({ page: p.kind, key: p.key })), login_open: loginOpen });
   }, [tab, stack, loginOpen]);
 
-  /* —— 安卓硬件返回键 ——
-     层级：全屏 → 面板/弹层 → 登录框 → 页面栈 → 回首页 → 退出应用。
-     不注册这个监听，Tauri 会直接 webView.goBack() 或退出，表现就是「任意页面返回都回桌面」。 */
+  /* ���� ��׿Ӳ�����ؼ� ����
+     �㼶��ȫ�� �� ���/���� �� ��¼�� �� ҳ��ջ �� ����ҳ �� �˳�Ӧ�á�
+     ��ע�����������Tauri ��ֱ�� webView.goBack() ���˳������־��ǡ�����ҳ�淵�ض������桹�� */
   const backRef = useRef<() => void>(() => {});
   backRef.current = () => {
-    if (fs) { setFs(false); return; }                        // 沉浸全屏
+    if (fs) { setFs(false); return; }                        // ����ȫ��
     if (document.fullscreenElement) { document.exitFullscreen().catch(() => {}); return; }
-    if (runBack()) return;                                  // 播放器的选集/评论/图文面板
+    if (runBack()) return;                                  // ��������ѡ��/����/ͼ�����
     if (loginOpen) { setLoginOpen(false); return; }
     if (stack.length) { pop(); return; }
     if (tab !== "home") { setTab("home"); return; }
@@ -254,7 +254,7 @@ export default function App() {
     let handle: { unregister: () => Promise<void> } | null = null;
     addPluginListener("app", "back-button", () => backRef.current())
       .then((l) => { if (disposed) l.unregister().catch(() => {}); else handle = l; })
-      .catch(() => { /* 非安卓宿主忽略 */ });
+      .catch(() => { /* �ǰ�׿�������� */ });
     return () => {
       disposed = true;
       handle?.unregister().catch(() => {});
@@ -280,7 +280,7 @@ export default function App() {
       {isMobile ? <MobileShell /> : <DesktopShell />}
       <LoginModal />
       <ToastHost />
-      {/* 登录遮罩键盘处理占位 */}
+      {/* ��¼���ּ��̴���ռλ */}
       {loginOpen && <div className="hidden" onClick={() => setLoginOpen(false)} />}
     </>
   );
